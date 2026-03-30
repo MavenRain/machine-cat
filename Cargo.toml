@@ -1,0 +1,20 @@
+[package]
+name = "machine-cat"
+version = "0.1.0"
+edition = "2024"
+description = "Generic AIR chip framework built on proof-cat"
+license = "MIT"
+readme = "README.md"
+keywords = ["air", "stark", "sumcheck", "category-theory", "zero-knowledge"]
+categories = ["mathematics", "cryptography"]
+
+[dependencies]
+proof-cat = "0.1"
+plonkish-cat = "0.1"
+sha2 = "0.10"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = "warn"
+needless_pass_by_value = "warn"
+manual_map = "warn"
