@@ -3,8 +3,8 @@
 /// All errors that can arise in machine-cat.
 #[derive(Debug)]
 pub enum Error {
-    /// An error propagated from proof-cat.
-    ProofCat(proof_cat::Error),
+    /// An error propagated from proof-cat-core.
+    ProofCatCore(proof_cat_core::Error),
     /// An error propagated from plonkish-cat.
     Plonkish(plonkish_cat::Error),
     /// An error propagated from field-cat (field arithmetic or byte encoding).
@@ -56,7 +56,7 @@ pub enum Error {
 impl core::fmt::Display for Error {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            Self::ProofCat(e) => write!(f, "proof-cat error: {e}"),
+            Self::ProofCatCore(e) => write!(f, "proof-cat-core error: {e}"),
             Self::Plonkish(e) => write!(f, "plonkish-cat error: {e}"),
             Self::FieldCat(e) => write!(f, "field-cat error: {e}"),
             Self::ColumnOutOfBounds {
@@ -99,7 +99,7 @@ impl core::fmt::Display for Error {
 impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
-            Self::ProofCat(e) => Some(e),
+            Self::ProofCatCore(e) => Some(e),
             Self::Plonkish(e) => Some(e),
             Self::FieldCat(e) => Some(e),
             Self::ColumnOutOfBounds { .. }
@@ -114,9 +114,9 @@ impl std::error::Error for Error {
     }
 }
 
-impl From<proof_cat::Error> for Error {
-    fn from(e: proof_cat::Error) -> Self {
-        Self::ProofCat(e)
+impl From<proof_cat_core::Error> for Error {
+    fn from(e: proof_cat_core::Error) -> Self {
+        Self::ProofCatCore(e)
     }
 }
 

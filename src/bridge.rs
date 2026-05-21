@@ -7,10 +7,10 @@
 //! The current protocol opens all trace values (not zero-knowledge).
 
 use field_cat::{Field, FieldBytes};
-use proof_cat::commit::merkle::{MerkleProof, MerkleRoot, MerkleTree};
-use proof_cat::poly::MultilinearPoly;
-use proof_cat::sumcheck::{SumcheckClaim, SumcheckProof, sumcheck_prove, sumcheck_verify};
-use proof_cat::transcript::Transcript;
+use proof_cat_core::commit::merkle::{MerkleProof, MerkleRoot, MerkleTree};
+use proof_cat_core::poly::MultilinearPoly;
+use proof_cat_core::sumcheck::{SumcheckClaim, SumcheckProof, sumcheck_prove, sumcheck_verify};
+use proof_cat_core::transcript::Transcript;
 
 use crate::air::Air;
 use crate::air_expr::AirExpr;
@@ -207,7 +207,7 @@ pub fn air_verify<F: FieldBytes, A: Air<F>>(air: &A, proof: &AirProof<F>) -> Res
         let (final_eval, challenges, _) = sumcheck_verify(
             proof.sumcheck(),
             &F::zero(),
-            proof_cat::NumVars::new(num_vars),
+            proof_cat_core::NumVars::new(num_vars),
             transcript,
         )?;
 
@@ -223,7 +223,7 @@ pub fn air_verify<F: FieldBytes, A: Air<F>>(air: &A, proof: &AirProof<F>) -> Res
             let expected = poly.evaluate(&challenges)?;
             Ok(expected == final_eval)
         } else {
-            Err(Error::ProofCat(proof_cat::Error::MerkleVerificationFailed))
+            Err(Error::ProofCatCore(proof_cat_core::Error::MerkleVerificationFailed))
         }
     }
 }
