@@ -184,13 +184,7 @@ mod tests {
 
     #[test]
     fn column_ref_display() {
-        assert_eq!(
-            format!("{}", ColumnRef::Current(Column::new(0))),
-            "curr.c0"
-        );
-        assert_eq!(
-            format!("{}", ColumnRef::Next(Column::new(1))),
-            "next.c1"
-        );
+        assert_eq!(format!("{}", ColumnRef::Current(Column::new(0))), "curr.c0");
+        assert_eq!(format!("{}", ColumnRef::Next(Column::new(1))), "next.c1");
     }
 }

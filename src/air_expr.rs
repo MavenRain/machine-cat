@@ -8,7 +8,7 @@
 
 use crate::column::{Column, ColumnRef};
 use crate::error::Error;
-use plonkish_cat::Field;
+use field_cat::Field;
 
 /// A symbolic polynomial expression over row-relative column references.
 ///
@@ -18,7 +18,7 @@ use plonkish_cat::Field;
 /// # Examples
 ///
 /// ```
-/// use plonkish_cat::F101;
+/// use field_cat::F101;
 /// use machine_cat::{AirExpr, Column};
 ///
 /// // Constraint: next_a - current_b = 0
@@ -121,25 +121,27 @@ impl<F: Field> std::ops::Neg for AirExpr<F> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use plonkish_cat::F101;
+    use field_cat::F101;
 
     fn two_col_assignment(
         curr: Vec<F101>,
         next: Vec<F101>,
     ) -> impl Fn(ColumnRef) -> Result<F101, Error> {
         move |cr| match cr {
-            ColumnRef::Current(c) => curr.get(c.index()).cloned().ok_or(
-                Error::ColumnOutOfBounds {
+            ColumnRef::Current(c) => curr
+                .get(c.index())
+                .cloned()
+                .ok_or(Error::ColumnOutOfBounds {
                     index: c.index(),
                     column_count: curr.len(),
-                },
-            ),
-            ColumnRef::Next(c) => next.get(c.index()).cloned().ok_or(
-                Error::ColumnOutOfBounds {
+                }),
+            ColumnRef::Next(c) => next
+                .get(c.index())
+                .cloned()
+                .ok_or(Error::ColumnOutOfBounds {
                     index: c.index(),
                     column_count: next.len(),
-                },
-            ),
+                }),
         }
     }
 
@@ -193,12 +195,8 @@ mod tests {
     #[test]
     fn product_evaluates() -> Result<(), Error> {
         // current_a * current_b = 3 * 5 = 15
-        let expr = AirExpr::<F101>::current(Column::new(0))
-            * AirExpr::current(Column::new(1));
-        let assign = two_col_assignment(
-            vec![F101::new(3), F101::new(5)],
-            vec![],
-        );
+        let expr = AirExpr::<F101>::current(Column::new(0)) * AirExpr::current(Column::new(1));
+        let assign = two_col_assignment(vec![F101::new(3), F101::new(5)], vec![]);
         assert_eq!(expr.evaluate(&assign)?, F101::new(15));
         Ok(())
     }

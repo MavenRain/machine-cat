@@ -9,7 +9,7 @@ use crate::air_expr::AirExpr;
 use crate::column::ColumnCount;
 use crate::error::Error;
 use crate::trace::Trace;
-use plonkish_cat::Field;
+use field_cat::Field;
 
 /// An Algebraic Intermediate Representation.
 ///

@@ -7,6 +7,8 @@ pub enum Error {
     ProofCat(proof_cat::Error),
     /// An error propagated from plonkish-cat.
     Plonkish(plonkish_cat::Error),
+    /// An error propagated from field-cat (field arithmetic or byte encoding).
+    FieldCat(field_cat::Error),
     /// Column index out of bounds.
     ColumnOutOfBounds {
         /// The column index that was accessed.
@@ -56,6 +58,7 @@ impl core::fmt::Display for Error {
         match self {
             Self::ProofCat(e) => write!(f, "proof-cat error: {e}"),
             Self::Plonkish(e) => write!(f, "plonkish-cat error: {e}"),
+            Self::FieldCat(e) => write!(f, "field-cat error: {e}"),
             Self::ColumnOutOfBounds {
                 index,
                 column_count,
@@ -74,7 +77,11 @@ impl core::fmt::Display for Error {
                 write!(f, "trace row count {row_count} is not a power of two")
             }
             Self::UnsatisfiedAirConstraint { row } => {
-                write!(f, "AIR constraint not satisfied at row pair ({row}, {})", row + 1)
+                write!(
+                    f,
+                    "AIR constraint not satisfied at row pair ({row}, {})",
+                    row + 1
+                )
             }
             Self::NoConstraints => write!(f, "AIR has no constraints"),
             Self::InsufficientRows { row_count } => {
@@ -84,10 +91,7 @@ impl core::fmt::Display for Error {
                 row,
                 expected,
                 actual,
-            } => write!(
-                f,
-                "row {row} has {actual} elements, expected {expected}"
-            ),
+            } => write!(f, "row {row} has {actual} elements, expected {expected}"),
         }
     }
 }
@@ -97,6 +101,7 @@ impl std::error::Error for Error {
         match self {
             Self::ProofCat(e) => Some(e),
             Self::Plonkish(e) => Some(e),
+            Self::FieldCat(e) => Some(e),
             Self::ColumnOutOfBounds { .. }
             | Self::EmptyTrace
             | Self::ColumnCountMismatch { .. }
@@ -118,5 +123,11 @@ impl From<proof_cat::Error> for Error {
 impl From<plonkish_cat::Error> for Error {
     fn from(e: plonkish_cat::Error) -> Self {
         Self::Plonkish(e)
+    }
+}
+
+impl From<field_cat::Error> for Error {
+    fn from(e: field_cat::Error) -> Self {
+        Self::FieldCat(e)
     }
 }

@@ -20,7 +20,7 @@ use crate::air_expr::AirExpr;
 use crate::column::{Column, ColumnCount};
 use crate::error::Error;
 use crate::trace::Trace;
-use plonkish_cat::Field;
+use field_cat::Field;
 
 /// Number of computation steps (rows = steps + 1).
 ///
@@ -54,7 +54,7 @@ impl StepCount {
 /// # Examples
 ///
 /// ```
-/// use plonkish_cat::F101;
+/// use field_cat::F101;
 /// use machine_cat::{FibonacciInput, StepCount};
 ///
 /// let input = FibonacciInput::new(F101::new(1), F101::new(1), StepCount::new(7));
@@ -105,7 +105,7 @@ impl<F: Field> FibonacciInput<F> {
 /// # Examples
 ///
 /// ```
-/// use plonkish_cat::{F101, Field};
+/// use field_cat::{F101, Field};
 /// use machine_cat::{Air, FibonacciAir, FibonacciInput, StepCount};
 ///
 /// let air = FibonacciAir;
@@ -161,7 +161,7 @@ impl<F: Field> Air<F> for FibonacciAir {
 mod tests {
     use super::*;
     use crate::column::Column;
-    use plonkish_cat::F101;
+    use field_cat::F101;
 
     #[test]
     fn fibonacci_trace_correctness() -> Result<(), Error> {

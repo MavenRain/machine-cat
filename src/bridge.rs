@@ -6,13 +6,11 @@
 //! [`air_prove`] produces an [`AirProof`]; [`air_verify`] checks it.
 //! The current protocol opens all trace values (not zero-knowledge).
 
+use field_cat::{Field, FieldBytes};
 use proof_cat::commit::merkle::{MerkleProof, MerkleRoot, MerkleTree};
 use proof_cat::poly::MultilinearPoly;
 use proof_cat::sumcheck::{SumcheckClaim, SumcheckProof, sumcheck_prove, sumcheck_verify};
 use proof_cat::transcript::Transcript;
-use proof_cat::FieldBytes;
-
-use plonkish_cat::Field;
 
 use crate::air::Air;
 use crate::air_expr::AirExpr;
@@ -58,7 +56,7 @@ impl<F: Field> ColumnOpening<F> {
 /// # Examples
 ///
 /// ```
-/// use plonkish_cat::F101;
+/// use field_cat::F101;
 /// use machine_cat::{Air, FibonacciAir, FibonacciInput, StepCount};
 /// use machine_cat::bridge::{air_prove, air_verify};
 ///
@@ -159,10 +157,7 @@ pub fn air_prove<F: FieldBytes, A: Air<F>>(
         let poly = MultilinearPoly::from_evals(padded)?;
 
         // 8. Run sumcheck.
-        let (sumcheck, _, _) = sumcheck_prove(
-            &SumcheckClaim::new(poly, F::zero()),
-            transcript,
-        )?;
+        let (sumcheck, _, _) = sumcheck_prove(&SumcheckClaim::new(poly, F::zero()), transcript)?;
 
         // 9. Open all columns.
         let column_openings = open_all_columns(air, trace, &tree)?;
@@ -186,10 +181,7 @@ pub fn air_prove<F: FieldBytes, A: Air<F>>(
 /// # Errors
 ///
 /// Returns an error if any verification step fails structurally.
-pub fn air_verify<F: FieldBytes, A: Air<F>>(
-    air: &A,
-    proof: &AirProof<F>,
-) -> Result<bool, Error> {
+pub fn air_verify<F: FieldBytes, A: Air<F>>(air: &A, proof: &AirProof<F>) -> Result<bool, Error> {
     let constraints = air.constraints();
     if constraints.is_empty() {
         Err(Error::NoConstraints)
@@ -205,8 +197,11 @@ pub fn air_verify<F: FieldBytes, A: Air<F>>(
         // 2. Compute padded length and num_vars for sumcheck.
         let num_row_pairs = proof.row_count.saturating_sub(1);
         let padded_len = pad_to_power_of_two_len(num_row_pairs);
-        let num_vars = usize::try_from(padded_len.trailing_zeros())
-            .map_err(|_| Error::TraceNotPowerOfTwo { row_count: padded_len })?;
+        let num_vars = usize::try_from(padded_len.trailing_zeros()).map_err(|_| {
+            Error::TraceNotPowerOfTwo {
+                row_count: padded_len,
+            }
+        })?;
 
         // 3. Run sumcheck verifier.
         let (final_eval, challenges, _) = sumcheck_verify(
@@ -277,7 +272,10 @@ fn squeeze_challenges<F: FieldBytes>(
     (0..count).try_fold((Vec::with_capacity(count), transcript), |(alphas, t), _| {
         let (challenge, t): (F, Transcript) = t.squeeze_challenge()?;
         Ok((
-            alphas.into_iter().chain(core::iter::once(challenge)).collect(),
+            alphas
+                .into_iter()
+                .chain(core::iter::once(challenge))
+                .collect(),
             t,
         ))
     })
@@ -335,34 +333,28 @@ fn open_all_columns<F: FieldBytes, A: Air<F>>(
 fn verify_merkle_openings<F: FieldBytes>(proof: &AirProof<F>) -> bool {
     let cols = proof.column_openings.len();
     proof.column_openings.iter().all(|opening| {
-        opening
-            .values
-            .iter()
-            .enumerate()
-            .all(|(row, value)| {
-                let flat_idx = row * cols + opening.column_index;
-                MerkleTree::verify_opening(
-                    &proof.trace_commitment,
-                    flat_idx,
-                    value,
-                    &opening.merkle_proofs[row],
-                )
-            })
+        opening.values.iter().enumerate().all(|(row, value)| {
+            let flat_idx = row * cols + opening.column_index;
+            MerkleTree::verify_opening(
+                &proof.trace_commitment,
+                flat_idx,
+                value,
+                &opening.merkle_proofs[row],
+            )
+        })
     })
 }
 
 /// Reconstruct a Trace from the opened column values.
-fn reconstruct_trace<F: Field, A: Air<F>>(
-    air: &A,
-    proof: &AirProof<F>,
-) -> Result<Trace<F>, Error> {
+fn reconstruct_trace<F: Field, A: Air<F>>(air: &A, proof: &AirProof<F>) -> Result<Trace<F>, Error> {
     let cols = air.column_count().count();
     let rows = proof.row_count;
     let row_vecs: Vec<Vec<F>> = (0..rows)
         .map(|r| {
             (0..cols)
                 .map(|c| {
-                    proof.column_openings
+                    proof
+                        .column_openings
                         .get(c)
                         .and_then(|opening| opening.values.get(r).cloned())
                         .ok_or(Error::ColumnOutOfBounds {
@@ -394,7 +386,7 @@ fn pad_to_power_of_two_len(n: usize) -> usize {
 mod tests {
     use super::*;
     use crate::fibonacci::{FibonacciAir, FibonacciInput, StepCount};
-    use plonkish_cat::F101;
+    use field_cat::F101;
 
     #[test]
     fn fibonacci_prove_verify_roundtrip() -> Result<(), Error> {

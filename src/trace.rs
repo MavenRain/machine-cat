@@ -7,7 +7,7 @@
 
 use crate::column::{Column, ColumnCount, ColumnRef};
 use crate::error::Error;
-use plonkish_cat::Field;
+use field_cat::Field;
 
 /// A row count newtype.
 ///
@@ -50,7 +50,7 @@ impl core::fmt::Display for RowCount {
 /// # Examples
 ///
 /// ```
-/// use plonkish_cat::F101;
+/// use field_cat::F101;
 /// use machine_cat::{Column, ColumnCount, Trace};
 ///
 /// let trace = Trace::from_rows(
@@ -88,10 +88,9 @@ impl<F: Field> Trace<F> {
             Err(Error::EmptyTrace)
         } else {
             // Validate all row lengths, then flatten.
-            let data: Result<Vec<F>, Error> = rows
-                .iter()
-                .enumerate()
-                .try_fold(Vec::with_capacity(rows.len() * column_count.count()), |acc, (i, row)| {
+            let data: Result<Vec<F>, Error> = rows.iter().enumerate().try_fold(
+                Vec::with_capacity(rows.len() * column_count.count()),
+                |acc, (i, row)| {
                     if row.len() == column_count.count() {
                         Ok(acc.into_iter().chain(row.iter().cloned()).collect())
                     } else {
@@ -101,7 +100,8 @@ impl<F: Field> Trace<F> {
                             actual: row.len(),
                         })
                     }
-                });
+                },
+            );
             Ok(Self {
                 data: data?,
                 column_count,
@@ -196,7 +196,7 @@ impl<F: Field> Trace<F> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use plonkish_cat::F101;
+    use field_cat::F101;
 
     fn fib_trace() -> Result<Trace<F101>, Error> {
         Trace::from_rows(
