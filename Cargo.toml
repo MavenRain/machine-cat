@@ -1,6 +1,6 @@
 [package]
 name = "machine-cat"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 description = "Generic AIR chip framework built on proof-cat"
 license = "MIT"
@@ -11,7 +11,7 @@ categories = ["mathematics", "cryptography"]
 [dependencies]
 field-cat = "0.1"
 plonkish-cat = "0.2"
-proof-cat = { path = "../proof-cat", version = "0.2" }
+proof-cat = "0.2"
 sha2 = "0.10"
 
 [lints.clippy]
